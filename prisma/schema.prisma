@@ -3,75 +3,75 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  password      String
-  role          String    @default("EMPLOYEE")
-  country       String
-  timezone      String    @default("Asia/Qatar")
-  locale        String    @default("ar")
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("EMPLOYEE")
+  country   String
+  timezone  String   @default("Asia/Qatar")
+  locale    String   @default("ar")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  attendanceRecords Attendance[]
-  hourlyChecks      HourlyCheck[]
-  assignedTasks     Task[]        @relation("AssignedTo")
-  createdTasks      Task[]        @relation("CreatedBy")
-  overtimeRequests  OvertimeRequest[]
-  leaveRequests     LeaveRequest[]
-  notifications     Notification[]
-  projects          ProjectMember[]
-  auditLogs         AuditLog[]
-  authoredComments  Comment[]
-  timeEntries       TimeEntry[]
-  activityLogs      ActivityLog[]
-  settings          UserSettings?
-  submissions       Submission[] @relation("SubmissionOwner")
-  reviewedSubmissions Submission[] @relation("SubmissionReviewer")
-  submissionRevisions SubmissionRevision[]
-  attendanceAdjustments AttendanceAdjustment[] @relation("AttendanceAdjustmentRequester")
+  attendanceRecords             Attendance[]
+  hourlyChecks                  HourlyCheck[]
+  assignedTasks                 Task[]                 @relation("AssignedTo")
+  createdTasks                  Task[]                 @relation("CreatedBy")
+  overtimeRequests              OvertimeRequest[]
+  leaveRequests                 LeaveRequest[]
+  notifications                 Notification[]
+  projects                      ProjectMember[]
+  auditLogs                     AuditLog[]
+  authoredComments              Comment[]
+  timeEntries                   TimeEntry[]
+  activityLogs                  ActivityLog[]
+  settings                      UserSettings?
+  submissions                   Submission[]           @relation("SubmissionOwner")
+  reviewedSubmissions           Submission[]           @relation("SubmissionReviewer")
+  submissionRevisions           SubmissionRevision[]
+  attendanceAdjustments         AttendanceAdjustment[] @relation("AttendanceAdjustmentRequester")
   reviewedAttendanceAdjustments AttendanceAdjustment[] @relation("AttendanceAdjustmentReviewer")
 }
 
 model UserSettings {
-  id                 String  @id @default(cuid())
-  userId             String  @unique
-  theme              String  @default("LIGHT")
-  compactMode        Boolean @default(false)
-  reducedMotion      Boolean @default(false)
-  notifyTasks        Boolean @default(true)
-  notifyProjects     Boolean @default(true)
-  notifyRequests     Boolean @default(true)
-  notifyAttendance   Boolean @default(true)
-  notifySystem       Boolean @default(true)
-  updatedAt          DateTime @updatedAt
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  theme            String   @default("LIGHT")
+  compactMode      Boolean  @default(false)
+  reducedMotion    Boolean  @default(false)
+  notifyTasks      Boolean  @default(true)
+  notifyProjects   Boolean  @default(true)
+  notifyRequests   Boolean  @default(true)
+  notifyAttendance Boolean  @default(true)
+  notifySystem     Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SystemSettings {
-  id                       String   @id @default("default")
-  organizationName         String   @default("InterVia Design")
-  timezone                 String   @default("Asia/Hebron")
-  dailyWorkHours           Float    @default(8)
-  workStartMinutes         Int      @default(480)
-  lateGraceMinutes         Int      @default(15)
-  earlyCheckInMinutes      Int      @default(60)
-  autoCloseHour            Int      @default(22)
-  workingDays              String   @default("[0,1,2,3,4]")
-  hourlyCheckInterval      Int      @default(60)
-  hourlyCheckWindow        Int      @default(15)
-  overtimeMaxHours         Float    @default(12)
-  annualLeaveDays          Int      @default(21)
-  projectTrashRetentionDays Int     @default(30)
-  updatedAt                DateTime @updatedAt
+  id                        String   @id @default("default")
+  organizationName          String   @default("InterVia Design")
+  timezone                  String   @default("Asia/Hebron")
+  dailyWorkHours            Float    @default(8)
+  workStartMinutes          Int      @default(480)
+  lateGraceMinutes          Int      @default(15)
+  earlyCheckInMinutes       Int      @default(60)
+  autoCloseHour             Int      @default(22)
+  workingDays               String   @default("[0,1,2,3,4]")
+  hourlyCheckInterval       Int      @default(60)
+  hourlyCheckWindow         Int      @default(15)
+  overtimeMaxHours          Float    @default(12)
+  annualLeaveDays           Int      @default(21)
+  projectTrashRetentionDays Int      @default(30)
+  updatedAt                 DateTime @updatedAt
 }
 
 model IntegrationCredential {
@@ -83,43 +83,43 @@ model IntegrationCredential {
 }
 
 model Attendance {
-  id        String   @id @default(cuid())
-  userId    String
-  date      DateTime
-  checkIn   DateTime
-  checkOut  DateTime?
-  totalHours Float    @default(0)
-  expectedHours Float   @default(8)
-  status     String    @default("PRESENT")
-  lateMinutes Int       @default(0)
-  earlyLeaveMinutes Int  @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String    @id @default(cuid())
+  userId            String
+  date              DateTime
+  checkIn           DateTime
+  checkOut          DateTime?
+  totalHours        Float     @default(0)
+  expectedHours     Float     @default(8)
+  status            String    @default("PRESENT")
+  lateMinutes       Int       @default(0)
+  earlyLeaveMinutes Int       @default(0)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   hourlyChecks HourlyCheck[]
-  adjustments AttendanceAdjustment[]
+  adjustments  AttendanceAdjustment[]
 
   @@unique([userId, date])
 }
 
 model AttendanceAdjustment {
-  id           String   @id @default(cuid())
-  attendanceId String
-  requestedById String
-  reviewerId   String?
-  requestedCheckIn DateTime?
+  id                String    @id @default(cuid())
+  attendanceId      String
+  requestedById     String
+  reviewerId        String?
+  requestedCheckIn  DateTime?
   requestedCheckOut DateTime?
-  reason       String
-  status       String   @default("PENDING")
-  reviewNote   String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  reason            String
+  status            String    @default("PENDING")
+  reviewNote        String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  attendance Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
-  requestedBy User @relation("AttendanceAdjustmentRequester", fields: [requestedById], references: [id], onDelete: Cascade)
-  reviewer User? @relation("AttendanceAdjustmentReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  attendance  Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  requestedBy User       @relation("AttendanceAdjustmentRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  reviewer    User?      @relation("AttendanceAdjustmentReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([requestedById, createdAt])
@@ -140,20 +140,20 @@ model HourlyCheck {
 }
 
 model Project {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
-  code        String?  @unique
+  code        String?   @unique
   clientName  String?
   clientCode  String?
   description String?
   deadline    DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  tasks   Task[]
-  members ProjectMember[]
-  submissions Submission[]
+  tasks            Task[]
+  members          ProjectMember[]
+  submissions      Submission[]
   repositorySource ProjectRepositoryItem?
 
   @@index([deletedAt])
@@ -191,30 +191,30 @@ model ProjectRepositoryItem {
 }
 
 model Submission {
-  id               String    @id @default(cuid())
-  userId           String
-  projectId        String
-  type             String
-  periodDate       DateTime
-  note             String?
-  status           String    @default("OPEN")
-  dropboxRequestId String    @unique
+  id                String    @id @default(cuid())
+  userId            String
+  projectId         String
+  type              String
+  periodDate        DateTime
+  note              String?
+  status            String    @default("OPEN")
+  dropboxRequestId  String    @unique
   dropboxRequestUrl String
-  dropboxFolder    String
-  fileCount        Int       @default(0)
-  submittedAt      DateTime?
-  reviewerId       String?
-  reviewedAt       DateTime?
-  reviewNote       String?
-  version          Int      @default(1)
-  cancelledAt      DateTime?
-  reopenedAt       DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  dropboxFolder     String
+  fileCount         Int       @default(0)
+  submittedAt       DateTime?
+  reviewerId        String?
+  reviewedAt        DateTime?
+  reviewNote        String?
+  version           Int       @default(1)
+  cancelledAt       DateTime?
+  reopenedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  user      User             @relation("SubmissionOwner", fields: [userId], references: [id], onDelete: Cascade)
-  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  reviewer  User?            @relation("SubmissionReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  user      User                 @relation("SubmissionOwner", fields: [userId], references: [id], onDelete: Cascade)
+  project   Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviewer  User?                @relation("SubmissionReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
   files     SubmissionFile[]
   revisions SubmissionRevision[]
 
@@ -234,22 +234,22 @@ model SubmissionRevision {
   createdAt    DateTime @default(now())
 
   submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy  User       @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@unique([submissionId, version])
   @@index([submissionId, createdAt])
 }
 
 model SubmissionFile {
-  id            String   @id @default(cuid())
-  submissionId  String
-  dropboxId     String   @unique
-  name          String
-  path          String
-  size          Float
-  contentHash   String?
-  uploadedAt    DateTime?
-  createdAt     DateTime @default(now())
+  id           String    @id @default(cuid())
+  submissionId String
+  dropboxId    String    @unique
+  name         String
+  path         String
+  size         Float
+  contentHash  String?
+  uploadedAt   DateTime?
+  createdAt    DateTime  @default(now())
 
   submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
@@ -269,24 +269,24 @@ model ProjectMember {
 }
 
 model Task {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  status      String     @default("IN_PROGRESS")
-  priority    String     @default("MEDIUM")
-  executionOrder Int     @default(0)
-  deadline    DateTime?
-  projectId   String
-  assigneeId  String
-  creatorId   String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  status         String    @default("IN_PROGRESS")
+  priority       String    @default("MEDIUM")
+  executionOrder Int       @default(0)
+  deadline       DateTime?
+  projectId      String
+  assigneeId     String
+  creatorId      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  project    Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  assignee   User         @relation("AssignedTo", fields: [assigneeId], references: [id])
-  creator    User         @relation("CreatedBy", fields: [creatorId], references: [id])
-  comments   Comment[]
-  subtasks   Subtask[]
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    User        @relation("AssignedTo", fields: [assigneeId], references: [id])
+  creator     User        @relation("CreatedBy", fields: [creatorId], references: [id])
+  comments    Comment[]
+  subtasks    Subtask[]
   timeEntries TimeEntry[]
 
   @@index([assigneeId, priority])
@@ -319,18 +319,18 @@ model OvertimeRequest {
 }
 
 model LeaveRequest {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
-  type        String   @default("ANNUAL")
+  type        String    @default("ANNUAL")
   startDate   DateTime
   endDate     DateTime
   days        Int
   reason      String?
-  status      String   @default("PENDING")
+  status      String    @default("PENDING")
   managerNote String?
   reviewedAt  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -363,27 +363,27 @@ model Subtask {
 }
 
 model TimeEntry {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   taskId    String
   userId    String
   startedAt DateTime
   endedAt   DateTime?
-  duration  Float?   @default(0)
+  duration  Float?    @default(0)
   note      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
 }
 
 model ActivityLog {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
   entityType String
-  entityId  String
-  details   String?
-  createdAt DateTime @default(now())
+  entityId   String
+  details    String?
+  createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -392,7 +392,7 @@ model ProjectTemplate {
   id          String   @id @default(cuid())
   name        String
   description String?
-  tasks       String  @default("[]")
+  tasks       String   @default("[]")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
