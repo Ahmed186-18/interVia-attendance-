@@ -9,12 +9,13 @@ import {
   listDropboxFiles,
 } from "@/lib/dropbox";
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const auth = requireAuth(request);
   if (auth instanceof NextResponse) return auth;
   try {
     const submission = await prisma.submission.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: { select: { id: true, name: true } },
         project: { select: { id: true, name: true } },

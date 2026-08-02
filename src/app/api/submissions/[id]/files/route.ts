@@ -4,14 +4,15 @@ import { requireAuth } from "@/lib/auth";
 import { createAuditLog } from "@/lib/utils";
 import { deleteDropboxFile, DropboxIntegrationError, getDropboxTemporaryLink } from "@/lib/dropbox";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const auth = requireAuth(request);
   if (auth instanceof NextResponse) return auth;
   try {
     const fileId = new URL(request.url).searchParams.get("fileId");
     if (!fileId) return NextResponse.json({ error: "معرف الملف مطلوب" }, { status: 400 });
     const file = await prisma.submissionFile.findFirst({
-      where: { id: fileId, submissionId: params.id },
+      where: { id: fileId, submissionId: id },
       include: { submission: { select: { userId: true } } },
     });
     if (!file) return NextResponse.json({ error: "الملف غير موجود" }, { status: 404 });
@@ -29,13 +30,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const auth = requireAuth(request);
   if (auth instanceof NextResponse) return auth;
   try {
     const fileId = new URL(request.url).searchParams.get("fileId");
     if (!fileId) return NextResponse.json({ error: "معرف الملف مطلوب" }, { status: 400 });
-    const file = await prisma.submissionFile.findFirst({ where: { id: fileId, submissionId: params.id }, include: { submission: true } });
+    const file = await prisma.submissionFile.findFirst({ where: { id: fileId, submissionId: id }, include: { submission: true } });
     if (!file) return NextResponse.json({ error: "الملف غير موجود" }, { status: 404 });
     if (auth.role === "EMPLOYEE" && file.submission.userId !== auth.userId) return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
     if (!["OPEN", "REVISION_REQUESTED"].includes(file.submission.status)) return NextResponse.json({ error: "أعد فتح التسليم قبل حذف ملف منه" }, { status: 409 });

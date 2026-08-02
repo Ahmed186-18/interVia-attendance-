@@ -4,13 +4,13 @@ import { requireAuth } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const subtasks = await prisma.subtask.findMany({
       where: { taskId: id },
@@ -26,13 +26,13 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { title } = await request.json();
 
     if (!title) {
@@ -85,13 +85,13 @@ export async function POST(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { id: subtaskId, completed, title, order } = await request.json();
 
     if (!subtaskId) {
@@ -167,13 +167,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { id: subtaskId } = await request.json();
 
     if (!subtaskId) {

@@ -5,7 +5,7 @@ import { getTodayAttendance } from "@/lib/utils";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
@@ -30,7 +30,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
@@ -91,7 +91,7 @@ export async function POST(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;

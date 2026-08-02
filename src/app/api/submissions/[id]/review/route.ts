@@ -4,7 +4,8 @@ import { requireManager } from "@/lib/auth";
 import { createAuditLog, createNotification } from "@/lib/utils";
 import { createDropboxFileRequest, DropboxIntegrationError } from "@/lib/dropbox";
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const auth = requireManager(request);
   if (auth instanceof NextResponse) return auth;
   try {
@@ -13,7 +14,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: "قرار المراجعة غير صحيح" }, { status: 400 });
     }
     const submission = await prisma.submission.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { user: { select: { id: true, name: true } }, project: { select: { name: true } }, files: true },
     });
     if (!submission) return NextResponse.json({ error: "التسليم غير موجود" }, { status: 404 });

@@ -4,14 +4,15 @@ import { requireAuth } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
     const project = await prisma.project.findFirst({
-      where: { id: params.id, deletedAt: null },
+      where: { id, deletedAt: null },
     });
 
     if (!project) {
@@ -19,24 +20,24 @@ export async function GET(
     }
 
     const totalTasks = await prisma.task.count({
-      where: { projectId: params.id },
+      where: { projectId: id },
     });
 
     const completedTasks = await prisma.task.count({
-      where: { projectId: params.id, status: "COMPLETED" },
+      where: { projectId: id, status: "COMPLETED" },
     });
 
     const inProgressTasks = await prisma.task.count({
-      where: { projectId: params.id, status: "IN_PROGRESS" },
+      where: { projectId: id, status: "IN_PROGRESS" },
     });
 
     const inReviewTasks = await prisma.task.count({
-      where: { projectId: params.id, status: "IN_REVIEW" },
+      where: { projectId: id, status: "IN_REVIEW" },
     });
 
     const tasksByPriority = await prisma.task.groupBy({
       by: ["priority"],
-      where: { projectId: params.id },
+      where: { projectId: id },
       _count: true,
     });
 
@@ -50,14 +51,14 @@ export async function GET(
     });
 
     const membersCount = await prisma.projectMember.count({
-      where: { projectId: params.id },
+      where: { projectId: id },
     });
 
     const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     const taskIds = (
       await prisma.task.findMany({
-        where: { projectId: params.id },
+        where: { projectId: id },
         select: { id: true },
       })
     ).map((t) => t.id);
@@ -65,7 +66,7 @@ export async function GET(
     const recentActivity = await prisma.activityLog.findMany({
       where: {
         OR: [
-          { entityType: "project", entityId: params.id },
+          { entityType: "project", entityId: id },
           { entityType: "task", entityId: { in: taskIds } },
         ],
       },

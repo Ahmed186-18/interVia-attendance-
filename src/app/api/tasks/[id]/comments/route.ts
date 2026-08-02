@@ -5,13 +5,13 @@ import { createNotification } from "@/lib/utils";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const task = await prisma.task.findUnique({ where: { id } });
 
@@ -36,13 +36,13 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { content } = await request.json();
 
     if (!content || !content.trim()) {

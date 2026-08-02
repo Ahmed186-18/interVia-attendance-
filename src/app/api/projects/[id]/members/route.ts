@@ -5,14 +5,15 @@ import { createNotification } from "@/lib/utils";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const userOrResponse = requireAuth(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
   try {
     const project = await prisma.project.findFirst({
-      where: { id: params.id, deletedAt: null },
+      where: { id, deletedAt: null },
     });
 
     if (!project) {
@@ -20,7 +21,7 @@ export async function GET(
     }
 
     const members = await prisma.projectMember.findMany({
-      where: { projectId: params.id },
+      where: { projectId: id },
       include: {
         user: {
           select: { id: true, name: true, email: true, role: true },
@@ -38,8 +39,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const userOrResponse = requireManager(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
@@ -54,7 +56,7 @@ export async function POST(
     }
 
     const project = await prisma.project.findFirst({
-      where: { id: params.id, deletedAt: null },
+      where: { id, deletedAt: null },
     });
 
     if (!project) {
@@ -62,7 +64,7 @@ export async function POST(
     }
 
     const existingMember = await prisma.projectMember.findUnique({
-      where: { userId_projectId: { userId, projectId: params.id } },
+      where: { userId_projectId: { userId, projectId: id } },
     });
 
     if (existingMember) {
@@ -80,7 +82,7 @@ export async function POST(
     const member = await prisma.projectMember.create({
       data: {
         userId,
-        projectId: params.id,
+        projectId: id,
       },
       include: {
         user: {
@@ -125,8 +127,9 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const userOrResponse = requireManager(request);
   if (userOrResponse instanceof NextResponse) return userOrResponse;
 
@@ -141,7 +144,7 @@ export async function DELETE(
     }
 
     const project = await prisma.project.findFirst({
-      where: { id: params.id, deletedAt: null },
+      where: { id, deletedAt: null },
     });
 
     if (!project) {
@@ -149,7 +152,7 @@ export async function DELETE(
     }
 
     const member = await prisma.projectMember.findUnique({
-      where: { userId_projectId: { userId, projectId: params.id } },
+      where: { userId_projectId: { userId, projectId: id } },
       include: {
         user: { select: { name: true } },
       },
@@ -163,7 +166,7 @@ export async function DELETE(
     }
 
     const assignedTasks = await prisma.task.count({
-      where: { projectId: params.id, assigneeId: userId },
+      where: { projectId: id, assigneeId: userId },
     });
     if (assignedTasks > 0) {
       return NextResponse.json(
@@ -173,7 +176,7 @@ export async function DELETE(
     }
 
     await prisma.projectMember.delete({
-      where: { userId_projectId: { userId, projectId: params.id } },
+      where: { userId_projectId: { userId, projectId: id } },
     });
 
     await prisma.activityLog.create({
