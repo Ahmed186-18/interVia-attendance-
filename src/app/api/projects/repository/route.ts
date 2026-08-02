@@ -70,7 +70,9 @@ export async function POST(request: NextRequest) {
   try {
     const file = await findDropboxFileByName("Master_Sheet_All_Projects");
     if (!file) {
-      return NextResponse.json({ error: "لم يتم العثور على ملف Master_Sheet_All_Projects.xlsx" }, { status: 404 });
+      return NextResponse.json({
+        error: "تم البحث داخل المجلد الشخصي ومساحة فريق Dropbox، لكن لم يظهر ملف Master_Sheet_All_Projects.xlsx للحساب المرتبط",
+      }, { status: 404 });
     }
     const workbook = await downloadDropboxFile(file.id);
     const rows = readXlsxSheet(workbook, "Projects");

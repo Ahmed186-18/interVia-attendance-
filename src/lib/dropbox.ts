@@ -160,13 +160,46 @@ export async function getDropboxConnectionStatus(): Promise<DropboxConnectionSta
   }
 }
 
-function userAuthHeaders(token: string, teamMemberId?: string | null) {
+function userAuthHeaders(
+  token: string,
+  teamMemberId?: string | null,
+  rootNamespaceId?: string | null
+) {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
   if (teamMemberId) headers["Dropbox-API-Select-User"] = teamMemberId;
+  if (rootNamespaceId) {
+    headers["Dropbox-API-Path-Root"] = JSON.stringify({
+      ".tag": "root",
+      root: rootNamespaceId,
+    });
+  }
   return headers;
+}
+
+async function getDropboxRootNamespaceId(token: string, teamMemberId?: string | null) {
+  const response = await dropboxFetch(`${API_URL}/users/get_current_account`, {
+    method: "POST",
+    headers: userAuthHeaders(token, teamMemberId),
+    body: "null",
+    cache: "no-store",
+  });
+  const responseText = await response.text();
+  if (!response.ok) {
+    if (responseText.includes("missing_scope")) {
+      throw new DropboxIntegrationError(
+        "يحتاج Dropbox إلى صلاحية account_info.read حتى يتمكن من البحث داخل مساحة الفريق. فعّلها ثم أنشئ توكن جديداً واحفظه من الإعدادات.",
+        400
+      );
+    }
+    return null;
+  }
+  const account = JSON.parse(responseText) as {
+    root_info?: { root_namespace_id?: string };
+  };
+  return account.root_info?.root_namespace_id || null;
 }
 
 async function validateFileRequestAccess(token: string, teamMemberId?: string | null) {
@@ -261,12 +294,19 @@ export async function validateDropboxAccessToken(token: string, selectedTeamMemb
   };
 }
 
-async function call<T>(endpoint: string, body: object): Promise<T> {
+async function call<T>(
+  endpoint: string,
+  body: object,
+  options?: { teamRoot?: boolean }
+): Promise<T> {
   const token = await accessToken();
   const teamMemberId = await configuredTeamMemberId();
+  const rootNamespaceId = options?.teamRoot
+    ? await getDropboxRootNamespaceId(token, teamMemberId)
+    : null;
   const response = await dropboxFetch(`${API_URL}/${endpoint}`, {
     method: "POST",
-    headers: userAuthHeaders(token, teamMemberId),
+    headers: userAuthHeaders(token, teamMemberId, rootNamespaceId),
     body: JSON.stringify(body),
     cache: "no-store",
   });
@@ -377,13 +417,17 @@ export async function findDropboxFileByName(name: string) {
     query: name,
     options: {
       filename_only: true,
-      file_extensions: ["xlsx"],
       max_results: 100,
     },
-  });
+  }, { teamRoot: true });
   const files = result.matches
     .map((match) => match.metadata?.metadata || match.metadata)
-    .filter((file): file is DropboxSearchFile => Boolean(file?.id && file.name));
+    .filter((file): file is DropboxSearchFile => Boolean(file?.id && file.name))
+    .filter((file) => {
+      const expected = name.replace(/\.(xlsx|xlsm)$/i, "").trim().toLocaleLowerCase();
+      const actual = file.name.replace(/\.(xlsx|xlsm)$/i, "").trim().toLocaleLowerCase();
+      return expected === actual && /\.(xlsx|xlsm)$/i.test(file.name);
+    });
   return files.sort((first, second) => {
     const firstPreferred = first.path_display?.includes("/04_All Projects/") ? 1 : 0;
     const secondPreferred = second.path_display?.includes("/04_All Projects/") ? 1 : 0;
@@ -395,11 +439,18 @@ export async function findDropboxFileByName(name: string) {
 export async function downloadDropboxFile(fileId: string) {
   const token = await accessToken();
   const teamMemberId = await configuredTeamMemberId();
+  const rootNamespaceId = await getDropboxRootNamespaceId(token, teamMemberId);
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     "Dropbox-API-Arg": JSON.stringify({ path: fileId }),
   };
   if (teamMemberId) headers["Dropbox-API-Select-User"] = teamMemberId;
+  if (rootNamespaceId) {
+    headers["Dropbox-API-Path-Root"] = JSON.stringify({
+      ".tag": "root",
+      root: rootNamespaceId,
+    });
+  }
   const response = await dropboxFetch("https://content.dropboxapi.com/2/files/download", {
     method: "POST",
     headers,
