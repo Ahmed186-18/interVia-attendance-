@@ -7,8 +7,8 @@ async function main() {
   const email = process.env.SEED_ADMIN_EMAIL?.trim();
   const password = process.env.SEED_ADMIN_PASSWORD;
   const name = process.env.SEED_ADMIN_NAME?.trim() || "System Admin";
-  if (!email || !password || password.length < 12) {
-    throw new Error("Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD (12+ characters) before seeding");
+  if (!email) {
+    throw new Error("Set SEED_ADMIN_EMAIL before seeding");
   }
   const existingAdmin = await prisma.user.findUnique({
     where: { email },
@@ -17,6 +17,10 @@ async function main() {
   if (existingAdmin) {
     console.log("Admin user already exists");
     return;
+  }
+
+  if (!password || password.length < 12) {
+    throw new Error("Set SEED_ADMIN_PASSWORD (12+ characters) to create the first admin");
   }
 
   const hashedPassword = await bcrypt.hash(password, 12);
