@@ -600,7 +600,7 @@ export default function ProjectsPage() {
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-navy">مستودع المشاريع</h2>
-                      <p className="text-xs text-muted">مزامنة المشاريع من ملف Master_Sheet_All_Projects في Dropbox</p>
+                      <p className="text-xs text-muted">مزامنة المشاريع التي يبدأ كودها بـ P0 من ملف Master_Sheet_All_Projects في Dropbox</p>
                     </div>
                   </div>
                 </div>

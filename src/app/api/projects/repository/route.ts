@@ -81,11 +81,12 @@ export async function POST(request: NextRequest) {
     const records = rows.slice(1).flatMap((row, rowIndex) => {
       const code = text(row[index("Project Code")]);
       const name = text(row[index("Project Name")]);
-      if (!code || !/^P\d{3,}$/i.test(code) || !name) return [];
+      const normalizedCode = code?.toUpperCase() || null;
+      if (!normalizedCode?.startsWith("P0") || !name) return [];
       const values = Object.fromEntries(headers.map((header, cellIndex) => [header, text(row[cellIndex])]));
       return [{
         externalProjectId: text(row[index("Project ID")]),
-        code: code.toUpperCase(),
+        code: normalizedCode,
         name,
         clientId: text(row[index("Client ID")]),
         clientName: text(row[index("Client Name")]),
