@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { formatProjectLabel } from "@/lib/project-label";
 import {
   AlertCircleIcon,
   CalendarIcon,
@@ -52,7 +53,7 @@ interface Task {
   status: string;
   executionOrder: number;
   deadline: string | null;
-  project: { id: string; name: string };
+  project: { id: string; name: string; code?: string | null };
   timeEntries: TimeEntry[];
 }
 
@@ -440,7 +441,7 @@ function DayTask({ task, order, attendanceActive, activeTimer, busy, now, onTime
         <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white ${overdue ? "bg-danger" : order === 1 ? "bg-danger" : order === 2 ? "bg-warning" : order === 3 ? "bg-teal" : "bg-navy-300"}`}>{order}</div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-semibold text-navy">{task.title}</h3>{overdue && <span className="badge-danger">متأخرة</span>}{task.status === "IN_REVIEW" && <span className="badge-info">قيد المراجعة</span>}</div>
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted"><FolderIcon size={13} />{task.project.name}{task.deadline && ` · ${new Date(task.deadline).toLocaleDateString("ar", { day: "numeric", month: "short" })}`}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted" title={task.project.name}><FolderIcon size={13} /><span className="truncate">{formatProjectLabel(task.project, 28)}</span>{task.deadline && ` · ${new Date(task.deadline).toLocaleDateString("ar", { day: "numeric", month: "short" })}`}</p>
           {activeEntry && <p className="mt-1 font-mono text-xs font-semibold text-success">{formatDuration(now.getTime() - new Date(activeEntry.startedAt).getTime())}</p>}
         </div>
         <div className="flex gap-2">

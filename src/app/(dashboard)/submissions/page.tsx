@@ -14,6 +14,7 @@ import {
   XIcon,
 } from "@/components/icons";
 import SelectField from "@/components/ui/select";
+import { formatProjectLabel } from "@/lib/project-label";
 
 type SubmissionType = "DAILY" | "MONTHLY";
 type SubmissionStatus = "OPEN" | "SUBMITTED" | "REVIEWED" | "REVISION_REQUESTED" | "CANCELLED";
@@ -38,14 +39,14 @@ interface Submission {
   reviewNote: string | null;
   createdAt: string;
   user: { id: string; name: string; email: string };
-  project: { id: string; name: string };
+  project: { id: string; name: string; code?: string | null };
   reviewer?: { id: string; name: string } | null;
   files: SubmissionFile[];
   version: number;
   revisions?: { id: string; version: number; status: string; filesJson: string; note: string | null; createdAt: string }[];
 }
 
-interface Project { id: string; name: string }
+interface Project { id: string; name: string; code?: string | null }
 interface TeamMember { id: string; name: string; role: string }
 
 const statusInfo: Record<SubmissionStatus, { label: string; badge: string }> = {
@@ -220,7 +221,7 @@ export default function SubmissionsPage() {
           <div className="grid grid-cols-2 gap-2 sm:flex">
             <SelectField value={type} onChange={(value) => setType(value as typeof type)} options={[{ value: "ALL", label: "كل الأنواع" }, { value: "DAILY", label: "يومي" }, { value: "MONTHLY", label: "شهري" }]} className="min-w-0 sm:w-32" />
             <SelectField value={status} onChange={setStatus} options={[{ value: "ALL", label: "كل الحالات" }, { value: "OPEN", label: "بانتظار الملفات" }, { value: "SUBMITTED", label: "بانتظار المراجعة" }, { value: "REVIEWED", label: "تمت المراجعة" }, { value: "REVISION_REQUESTED", label: "مطلوب تعديل" }, { value: "CANCELLED", label: "ملغى" }]} className="min-w-0 sm:w-44" />
-            <SelectField value={projectId} onChange={setProjectId} options={[{ value: "", label: "كل المشاريع" }, ...projects.map((project) => ({ value: project.id, label: project.name }))]} className="min-w-0 sm:w-44" />
+            <SelectField value={projectId} onChange={setProjectId} options={[{ value: "", label: "كل المشاريع" }, ...projects.map((project) => ({ value: project.id, label: formatProjectLabel(project) }))]} className="min-w-0 sm:w-52" />
             {isManager && <SelectField value={userId} onChange={setUserId} options={[{ value: "", label: "كل الموظفين" }, ...team.filter((member) => member.role === "EMPLOYEE").map((member) => ({ value: member.id, label: member.name }))]} className="min-w-0 sm:w-44" />}
           </div>
         </div>
@@ -252,7 +253,7 @@ function SubmissionCard({ submission, isManager, busy, onVerify, onReview, onOpe
     <article id={`submission-${submission.id}`} className="card scroll-mt-24 overflow-hidden">
       <div className="flex items-start gap-3 border-b border-tint-200 p-4 sm:p-5">
         <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${submission.type === "DAILY" ? "bg-teal/10 text-teal" : "bg-navy/10 text-navy"}`}>{submission.type === "DAILY" ? <CalendarIcon size={20} /> : <ClockIcon size={20} />}</div>
-        <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold text-navy">{submission.type === "DAILY" ? "تسليم يومي" : "تسليم شهري"}</h3><span className={info.badge}>{info.label}</span></div><p className="mt-1 text-sm font-medium text-teal">{submission.project.name}</p><p className="mt-1 text-xs text-muted">{formatDate(submission.periodDate, submission.type)}{isManager && ` · ${submission.user.name}`}</p></div>
+        <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold text-navy">{submission.type === "DAILY" ? "تسليم يومي" : "تسليم شهري"}</h3><span className={info.badge}>{info.label}</span></div><p className="mt-1 truncate text-sm font-medium text-teal" title={submission.project.name}>{formatProjectLabel(submission.project)}</p><p className="mt-1 text-xs text-muted">{formatDate(submission.periodDate, submission.type)}{isManager && ` · ${submission.user.name}`}</p></div>
       </div>
       <div className="space-y-3 p-4 sm:p-5">
         {submission.note && <p className="rounded-xl bg-tint/45 p-3 text-xs leading-relaxed text-navy-400">{submission.note}</p>}

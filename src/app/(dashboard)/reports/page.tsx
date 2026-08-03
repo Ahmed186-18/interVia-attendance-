@@ -13,13 +13,14 @@ import {
   TrendingUpIcon,
   UsersIcon,
 } from "@/components/icons";
+import { formatProjectLabel } from "@/lib/project-label";
 
 type Tab = "summary" | "attendance" | "tasks" | "projects" | "overtime";
 
 interface ReportsData {
   filters: {
     users: { id: string; name: string; email: string }[];
-    projects: { id: string; name: string; deadline: string | null }[];
+    projects: { id: string; name: string; code?: string | null; deadline: string | null }[];
   };
   summary: {
     attendanceDays: number;
@@ -60,13 +61,14 @@ interface ReportsData {
     deadline: string | null;
     updatedAt: string;
     assignee: { id: string; name: string };
-    project: { id: string; name: string };
+    project: { id: string; name: string; code?: string | null };
     subtaskProgress: number;
     trackedHours: number;
   }[];
   projects: {
     id: string;
     name: string;
+    code?: string | null;
     deadline: string | null;
     totalTasks: number;
     completedTasks: number;
@@ -316,7 +318,7 @@ export default function ReportsPage() {
             المشروع
             <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="input-field mt-1.5 py-2.5 text-sm">
               <option value="">كل المشاريع</option>
-              {data?.filters.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+              {data?.filters.projects.map((project) => <option key={project.id} value={project.id}>{formatProjectLabel(project)}</option>)}
             </select>
           </label>
         </div>
@@ -492,7 +494,7 @@ function TasksReport({ data }: { data: ReportsData }) {
           const overdue = item.deadline && item.status !== "COMPLETED" && new Date(item.deadline) < new Date();
           return (
             <tr key={item.id} className="border-b border-tint-200/70 hover:bg-tint/20">
-              <Cell strong>{item.title}</Cell><Cell>{item.assignee.name}</Cell><Cell>{item.project.name}</Cell>
+              <Cell strong>{item.title}</Cell><Cell>{item.assignee.name}</Cell><Cell>{formatProjectLabel(item.project, 28)}</Cell>
               <Cell><span className={item.status === "COMPLETED" ? "badge-success" : item.status === "IN_REVIEW" ? "badge-info" : "badge-warning"}>{statusLabels[item.status]}</span></Cell>
               <Cell>{priorityLabels[item.priority]}</Cell><Cell danger={Boolean(overdue)}>{item.deadline ? formatDate(item.deadline) : "—"}</Cell>
               <Cell strong>{item.trackedHours.toFixed(1)} س</Cell>
@@ -510,7 +512,7 @@ function ProjectsReport({ data }: { data: ReportsData }) {
       {data.projects.map((project) => (
         <div key={project.id} className="card p-5">
           <div className="flex items-start justify-between gap-3">
-            <div><h3 className="font-semibold text-navy">{project.name}</h3><p className="mt-1 text-xs text-muted">{project.totalTasks} مهام · {project.trackedHours.toFixed(1)} ساعة</p></div>
+            <div className="min-w-0"><h3 className="truncate font-semibold text-navy" title={project.name}>{formatProjectLabel(project, 32)}</h3><p className="mt-1 text-xs text-muted">{project.totalTasks} مهام · {project.trackedHours.toFixed(1)} ساعة</p></div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy/10 text-navy"><FolderIcon size={20} /></div>
           </div>
           <div className="mt-6">

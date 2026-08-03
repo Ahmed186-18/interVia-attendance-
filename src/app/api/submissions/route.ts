@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
-        project: { select: { id: true, name: true } },
+        project: { select: { id: true, name: true, code: true } },
         reviewer: { select: { id: true, name: true } },
         files: { orderBy: { name: "asc" } },
         revisions: { orderBy: { version: "desc" }, select: { id: true, version: true, status: true, filesJson: true, note: true, createdAt: true } },
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         },
         include: {
           user: { select: { id: true, name: true, email: true } },
-          project: { select: { id: true, name: true } },
+          project: { select: { id: true, name: true, code: true } },
           files: true,
         },
       });

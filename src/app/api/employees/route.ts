@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
             priority: true,
             deadline: true,
             updatedAt: true,
-            project: { select: { id: true, name: true } },
+            project: { select: { id: true, name: true, code: true } },
             timeEntries: {
               where: { startedAt: { gte: monthStart, lt: tomorrow } },
               select: { duration: true },
@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
               select: {
                 id: true,
                 name: true,
+                code: true,
                 deadline: true,
                 _count: { select: { tasks: true } },
               },

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     const tasks = await prisma.task.findMany({
       where,
       include: {
-        project: { select: { id: true, name: true } },
+        project: { select: { id: true, name: true, code: true } },
         assignee: { select: { id: true, name: true } },
         creator: { select: { id: true, name: true } },
         _count: { select: { comments: true, subtasks: true, timeEntries: true } },
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
           executionOrder: (lastTask._max.executionOrder || 0) + 1,
         },
         include: {
-          project: { select: { id: true, name: true } },
+          project: { select: { id: true, name: true, code: true } },
           assignee: { select: { id: true, name: true } },
           creator: { select: { id: true, name: true } },
         },
@@ -286,7 +286,7 @@ export async function PATCH(request: NextRequest) {
       where: { id },
       data: updateData,
       include: {
-        project: { select: { id: true, name: true } },
+        project: { select: { id: true, name: true, code: true } },
         assignee: { select: { id: true, name: true } },
         creator: { select: { id: true, name: true } },
       },

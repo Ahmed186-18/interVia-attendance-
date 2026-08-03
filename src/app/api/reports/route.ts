@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.project.findMany({
         where: { deletedAt: null },
-        select: { id: true, name: true, deadline: true },
+        select: { id: true, name: true, code: true, deadline: true },
         orderBy: { name: "asc" },
       }),
       prisma.attendance.findMany({
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
         where: taskWhere,
         include: {
           assignee: { select: { id: true, name: true } },
-          project: { select: { id: true, name: true, deadline: true } },
+          project: { select: { id: true, name: true, code: true, deadline: true } },
           subtasks: { select: { completed: true } },
           timeEntries: {
             where: { startedAt: { gte: from, lt: to } },
@@ -124,6 +124,7 @@ export async function GET(request: NextRequest) {
         return {
           id: project.id,
           name: project.name,
+          code: project.code,
           deadline: project.deadline,
           totalTasks: projectTasks.length,
           completedTasks: completed,

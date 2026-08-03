@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { formatProjectLabel, shortenProjectName } from "@/lib/project-label";
 import {
   PlusIcon,
   FolderIcon,
@@ -370,7 +371,7 @@ export default function ProjectsPage() {
           <div className="flex items-center gap-3">
             <button onClick={() => { setSelectedProject(null); setStats(null); setMembers([]); }} className="btn-ghost text-sm cursor-pointer">← رجوع</button>
             <div>
-              <h1 className="text-lg font-bold text-navy">{selectedProject.name}</h1>
+              <h1 className="text-lg font-bold text-navy" title={selectedProject.name}>{formatProjectLabel(selectedProject, 46)}</h1>
               {selectedProject.description && <p className="text-sm text-muted">{selectedProject.description}</p>}
             </div>
           </div>
@@ -554,7 +555,7 @@ export default function ProjectsPage() {
                   <div className="w-11 h-11 rounded-xl bg-teal/10 flex items-center justify-center"><FolderIcon size={22} className="text-teal" /></div>
                   <span className="text-xs text-muted bg-tint px-2 py-0.5 rounded-full">{project.totalMembers} أعضاء</span>
                 </div>
-                <h3 className="text-base font-bold text-navy mb-1">{project.name}</h3>
+                <h3 className="mb-1 truncate text-base font-bold text-navy" title={project.name}>{formatProjectLabel(project, 30)}</h3>
                 {(project.code || project.clientName) && (
                   <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px]">
                     {project.code && <span dir="ltr" className="rounded-md bg-teal/10 px-2 py-1 font-semibold text-teal">{project.code}</span>}
@@ -734,7 +735,7 @@ export default function ProjectsPage() {
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-start justify-between gap-2">
-                              <p className="font-semibold text-navy">{item.name}</p>
+                              <p className="font-semibold text-navy" title={item.name}>{shortenProjectName(item.name, 34)}</p>
                               <span dir="ltr" className="rounded-md bg-navy/5 px-2 py-1 text-[11px] font-bold text-navy">{item.code}</span>
                             </div>
                             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
@@ -825,7 +826,7 @@ export default function ProjectsPage() {
                   <div key={project.id} className="flex flex-col gap-3 rounded-xl border border-tint-200 p-4 sm:flex-row sm:items-center">
                     <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-danger/10"><FolderIcon size={19} className="text-danger" /></div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-navy">{project.name}</p>
+                      <p className="truncate text-sm font-semibold text-navy" title={project.name}>{formatProjectLabel(project, 34)}</p>
                       <p className="mt-1 text-xs text-muted">
                         {project.totalTasks} مهام · {project.totalMembers} أعضاء
                         {project.deletedAt && ` · حُذف ${new Date(project.deletedAt).toLocaleDateString("ar")}`}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { formatProjectLabel } from "@/lib/project-label";
 import {
   ActivityIcon,
   AlertCircleIcon,
@@ -69,11 +70,12 @@ interface Employee {
     deadline: string | null;
     updatedAt: string;
     trackedHours: number;
-    project: { id: string; name: string };
+    project: { id: string; name: string; code?: string | null };
   }[];
   projects: {
     id: string;
     name: string;
+    code?: string | null;
     deadline: string | null;
     joinedAt: string;
     membershipId: string;
@@ -481,11 +483,11 @@ function AttendanceTab({ employee }: { employee: Employee }) {
 }
 
 function TasksTab({ employee }: { employee: Employee }) {
-  return <SectionList title="المهام المسندة" icon={CheckSquareIcon} empty="لا توجد مهام مسندة">{employee.tasks.map((task) => { const overdue = task.deadline && task.status !== "COMPLETED" && new Date(task.deadline) < new Date(); return <div key={task.id} className="border-b border-tint-200 py-3"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-medium text-navy">{task.title}</p><p className="mt-1 text-xs text-muted">{task.project.name}{task.deadline && ` · ${formatDate(task.deadline)}`}</p></div><span className={task.status === "COMPLETED" ? "badge-success" : task.status === "IN_REVIEW" ? "badge-info" : overdue ? "badge-danger" : "badge-warning"}>{overdue ? "متأخرة" : task.status === "COMPLETED" ? "مكتملة" : task.status === "IN_REVIEW" ? "مراجعة" : "تنفيذ"}</span></div></div>; })}</SectionList>;
+  return <SectionList title="المهام المسندة" icon={CheckSquareIcon} empty="لا توجد مهام مسندة">{employee.tasks.map((task) => { const overdue = task.deadline && task.status !== "COMPLETED" && new Date(task.deadline) < new Date(); return <div key={task.id} className="border-b border-tint-200 py-3"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-sm font-medium text-navy">{task.title}</p><p className="mt-1 truncate text-xs text-muted" title={task.project.name}>{formatProjectLabel(task.project, 28)}{task.deadline && ` · ${formatDate(task.deadline)}`}</p></div><span className={task.status === "COMPLETED" ? "badge-success" : task.status === "IN_REVIEW" ? "badge-info" : overdue ? "badge-danger" : "badge-warning"}>{overdue ? "متأخرة" : task.status === "COMPLETED" ? "مكتملة" : task.status === "IN_REVIEW" ? "مراجعة" : "تنفيذ"}</span></div></div>; })}</SectionList>;
 }
 
 function ProjectsTab({ employee }: { employee: Employee }) {
-  return <div className="grid gap-3 sm:grid-cols-2">{employee.projects.length ? employee.projects.map((project) => <div key={project.id} className="card p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10"><FolderIcon size={19} className="text-teal" /></div><div><p className="text-sm font-semibold text-navy">{project.name}</p><p className="mt-1 text-[10px] text-muted">{project._count.tasks} مهام · انضم {formatDate(project.joinedAt)}</p></div></div></div>) : <Empty text="ليس عضوًا في أي مشروع نشط" />}</div>;
+  return <div className="grid gap-3 sm:grid-cols-2">{employee.projects.length ? employee.projects.map((project) => <div key={project.id} className="card p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10"><FolderIcon size={19} className="text-teal" /></div><div className="min-w-0"><p className="truncate text-sm font-semibold text-navy" title={project.name}>{formatProjectLabel(project, 30)}</p><p className="mt-1 text-[10px] text-muted">{project._count.tasks} مهام · انضم {formatDate(project.joinedAt)}</p></div></div></div>) : <Empty text="ليس عضوًا في أي مشروع نشط" />}</div>;
 }
 
 function RequestsTab({ employee }: { employee: Employee }) {

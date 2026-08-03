@@ -18,6 +18,7 @@ import {
   GripVerticalIcon,
 } from "@/components/icons";
 import SelectField from "@/components/ui/select";
+import { formatProjectLabel } from "@/lib/project-label";
 
 interface Subtask {
   id: string;
@@ -49,7 +50,7 @@ interface Task {
   status: string;
   executionOrder: number;
   deadline: string | null;
-  project: { id: string; name: string };
+  project: { id: string; name: string; code?: string | null };
   assignee: { id: string; name: string };
   creator: { id: string; name: string };
   _count: { comments: number; subtasks: number; timeEntries: number };
@@ -59,6 +60,7 @@ interface Task {
 interface Project {
   id: string;
   name: string;
+  code?: string | null;
 }
 
 interface User {
@@ -330,7 +332,7 @@ export default function TasksPage() {
             onChange={setFilterProject}
             options={[
               { value: "", label: "كل المشاريع" },
-              ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ...projects.map((p) => ({ value: p.id, label: formatProjectLabel(p) })),
             ]}
             className="w-full sm:w-auto sm:min-w-[160px]"
           />
@@ -458,7 +460,7 @@ export default function TasksPage() {
                         {task.project && (
                           <div className="mt-1.5 flex items-center gap-1 border-t border-tint-200 pt-1.5">
                             <FolderIcon size={12} className="text-muted" />
-                            <span className="text-[10px] text-muted">{task.project.name}</span>
+                            <span className="max-w-full truncate text-[10px] text-muted" title={task.project.name}>{formatProjectLabel(task.project, 24)}</span>
                           </div>
                         )}
                       </div>
@@ -504,7 +506,7 @@ export default function TasksPage() {
                   <SelectField
                     value={newTask.projectId}
                     onChange={(val) => setNewTask({ ...newTask, projectId: val })}
-                    options={projects.map((p) => ({ value: p.id, label: p.name }))}
+                    options={projects.map((p) => ({ value: p.id, label: formatProjectLabel(p) }))}
                     placeholder="اختر مشروع"
                     required
                   />
@@ -648,7 +650,7 @@ function TaskDetailModal({ task, onClose, canDelete, onDelete }: { task: Task; o
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-bold text-navy truncate">{task.title}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-muted">{task.project.name}</span>
+              <span className="truncate text-xs text-muted" title={task.project.name}>{formatProjectLabel(task.project, 28)}</span>
               <span className="text-xs text-muted">← {task.assignee.name}</span>
             </div>
           </div>
