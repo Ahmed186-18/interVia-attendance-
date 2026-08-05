@@ -371,8 +371,13 @@ export default function ProjectsPage() {
           <div className="flex items-center gap-3">
             <button onClick={() => { setSelectedProject(null); setStats(null); setMembers([]); }} className="btn-ghost text-sm cursor-pointer">← رجوع</button>
             <div>
-              <h1 className="text-lg font-bold text-navy" title={selectedProject.name}>{formatProjectLabel(selectedProject, 46)}</h1>
-              {selectedProject.description && <p className="text-sm text-muted">{selectedProject.description}</p>}
+              <h1 className="text-lg font-bold text-navy break-words">{formatProjectLabel(selectedProject, 100)}</h1>
+              {selectedProject.description && <p className="mt-1 text-sm text-muted">{selectedProject.description}</p>}
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                {selectedProject.code && <span dir="ltr" className="rounded-md bg-teal/10 px-2 py-1 font-semibold text-teal">{selectedProject.code}</span>}
+                {selectedProject.clientName && <span className="rounded-md bg-tint px-2 py-1 text-muted">العميل: {selectedProject.clientName}</span>}
+                {selectedProject.clientCode && <span dir="ltr" className="rounded-md bg-tint px-2 py-1 text-muted">{selectedProject.clientCode}</span>}
+              </div>
             </div>
           </div>
           {isManager && (
@@ -393,41 +398,83 @@ export default function ProjectsPage() {
           })}
         </div>
 
-        {activeTab === "overview" && stats && (
+        {activeTab === "overview" && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="card p-4 text-center">
-                <p className="text-2xl font-bold text-navy">{stats.totalTasks}</p>
-                <p className="text-xs text-muted mt-1">إجمالي المهام</p>
-              </div>
-              <div className="card p-4 text-center">
-                <p className="text-2xl font-bold text-success">{stats.completedTasks}</p>
-                <p className="text-xs text-muted mt-1">مكتملة</p>
-              </div>
-              <div className="card p-4 text-center">
-                <p className="text-2xl font-bold text-warning">{stats.inProgressTasks}</p>
-                <p className="text-xs text-muted mt-1">قيد التنفيذ</p>
-              </div>
-              <div className="card p-4 text-center">
-                <p className="text-2xl font-bold text-teal">{stats.inReviewTasks}</p>
-                <p className="text-xs text-muted mt-1">قيد المراجعة</p>
+            <div className="card p-5">
+              <h3 className="mb-4 text-sm font-semibold text-navy">معلومات المشروع</h3>
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">الاسم الكامل</p>
+                  <p className="mt-1 text-sm font-semibold text-navy break-words" title={selectedProject.name}>{selectedProject.name}</p>
+                </div>
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">كود المشروع</p>
+                  <p className="mt-1 text-sm font-semibold text-navy" dir="ltr">{selectedProject.code || "—"}</p>
+                </div>
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">العميل</p>
+                  <p className="mt-1 text-sm font-semibold text-navy break-words">{selectedProject.clientName || "—"}</p>
+                </div>
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">كود العميل</p>
+                  <p className="mt-1 text-sm font-semibold text-navy" dir="ltr">{selectedProject.clientCode || "—"}</p>
+                </div>
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">تاريخ الإنشاء</p>
+                  <p className="mt-1 text-sm font-semibold text-navy">{new Date(selectedProject.createdAt).toLocaleDateString("ar", { year: "numeric", month: "short", day: "numeric" })}</p>
+                </div>
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">الموعد النهائي</p>
+                  <p className="mt-1 text-sm font-semibold text-navy">{selectedProject.deadline ? new Date(selectedProject.deadline).toLocaleDateString("ar", { year: "numeric", month: "short", day: "numeric" }) : "—"}</p>
+                </div>
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">عدد المهام</p>
+                  <p className="mt-1 text-sm font-semibold text-navy">{selectedProject.totalTasks}</p>
+                </div>
+                <div className="rounded-xl bg-tint/50 p-3">
+                  <p className="text-[11px] text-muted">عدد الأعضاء</p>
+                  <p className="mt-1 text-sm font-semibold text-navy">{selectedProject.totalMembers}</p>
+                </div>
               </div>
             </div>
 
-            <div className="card p-6">
-              <h3 className="text-sm font-semibold text-navy mb-3">التقدم</h3>
-              <div className="flex items-center gap-4">
-                <div className="flex-1 bg-tint rounded-full h-3">
-                  <div className="bg-teal h-3 rounded-full transition-all duration-500" style={{ width: `${stats.progress}%` }} />
+            {stats && (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="card p-4 text-center">
+                    <p className="text-2xl font-bold text-navy">{stats.totalTasks}</p>
+                    <p className="text-xs text-muted mt-1">إجمالي المهام</p>
+                  </div>
+                  <div className="card p-4 text-center">
+                    <p className="text-2xl font-bold text-success">{stats.completedTasks}</p>
+                    <p className="text-xs text-muted mt-1">مكتملة</p>
+                  </div>
+                  <div className="card p-4 text-center">
+                    <p className="text-2xl font-bold text-warning">{stats.inProgressTasks}</p>
+                    <p className="text-xs text-muted mt-1">قيد التنفيذ</p>
+                  </div>
+                  <div className="card p-4 text-center">
+                    <p className="text-2xl font-bold text-teal">{stats.inReviewTasks}</p>
+                    <p className="text-xs text-muted mt-1">قيد المراجعة</p>
+                  </div>
                 </div>
-                <span className="text-lg font-bold text-navy">{stats.progress}%</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-danger" /><span className="text-xs text-muted">عالية: {stats.byPriority.HIGH}</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-warning" /><span className="text-xs text-muted">متوسطة: {stats.byPriority.MEDIUM}</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-teal" /><span className="text-xs text-muted">منخفضة: {stats.byPriority.LOW}</span></div>
-              </div>
-            </div>
+
+                <div className="card p-6">
+                  <h3 className="text-sm font-semibold text-navy mb-3">التقدم</h3>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 bg-tint rounded-full h-3">
+                      <div className="bg-teal h-3 rounded-full transition-all duration-500" style={{ width: `${stats.progress}%` }} />
+                    </div>
+                    <span className="text-lg font-bold text-navy">{stats.progress}%</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-danger" /><span className="text-xs text-muted">عالية: {stats.byPriority.HIGH}</span></div>
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-warning" /><span className="text-xs text-muted">متوسطة: {stats.byPriority.MEDIUM}</span></div>
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-teal" /><span className="text-xs text-muted">منخفضة: {stats.byPriority.LOW}</span></div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
