@@ -14,6 +14,10 @@ export interface AuthUser {
   role: string;
 }
 
+export function isManagementRole(role: string) {
+  return role === "MANAGER" || role === "ADMIN";
+}
+
 export function signToken(payload: AuthUser): string {
   return jwt.sign(payload, jwtSecret(), { expiresIn: "24h" });
 }
@@ -47,7 +51,7 @@ export function requireAuth(request: NextRequest): NextResponse | AuthUser {
 export function requireManager(request: NextRequest): NextResponse | AuthUser {
   const user = requireAuth(request);
   if (user instanceof NextResponse) return user;
-  if (user.role !== "MANAGER" && user.role !== "ADMIN") {
+  if (!isManagementRole(user.role)) {
     return NextResponse.json({ error: "غير مصرح — صلاحيات المدير مطلوبة" }, { status: 403 });
   }
   return user;

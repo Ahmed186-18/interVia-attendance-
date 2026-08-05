@@ -98,7 +98,7 @@ export async function createNotification(input: NotificationInput) {
     USER: ["EMPLOYEE", "MANAGER", "ADMIN"],
     EMPLOYEE: ["EMPLOYEE"],
     MANAGEMENT: ["MANAGER", "ADMIN"],
-    ADMIN: ["ADMIN"],
+    ADMIN: ["MANAGER", "ADMIN"],
   };
   if (!audienceRoles[input.audience].includes(recipient.role)) return null;
 
@@ -138,7 +138,7 @@ export async function notifyAdmins(input: Omit<NotificationInput, "userId" | "au
   const admins = await prisma.user.findMany({
     where: {
       isActive: true,
-      role: "ADMIN",
+      role: { in: ["MANAGER", "ADMIN"] },
       ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
     },
     select: { id: true },

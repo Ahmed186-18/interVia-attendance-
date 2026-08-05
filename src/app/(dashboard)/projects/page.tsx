@@ -125,7 +125,7 @@ export default function ProjectsPage() {
   const [newProject, setNewProject] = useState({ name: "", description: "", deadline: "" });
 
   const isManager = user?.role === "MANAGER" || user?.role === "ADMIN";
-  const isAdmin = user?.role === "ADMIN";
+  const canManageRepository = isManager;
 
   const visibleRepositoryItems = useMemo(() => {
     const query = repositoryQuery.trim().toLocaleLowerCase();
@@ -179,7 +179,7 @@ export default function ProjectsPage() {
   }, []);
 
   const fetchRepository = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!canManageRepository) return;
     setRepositoryBusy("loading");
     try {
       const response = await fetch("/api/projects/repository?status=ALL");
@@ -192,7 +192,7 @@ export default function ProjectsPage() {
     } finally {
       setRepositoryBusy(null);
     }
-  }, [isAdmin]);
+  }, [canManageRepository]);
 
   useEffect(() => {
     if (showRepositoryModal) fetchRepository();
@@ -509,7 +509,7 @@ export default function ProjectsPage() {
           <p className="page-subtitle">إدارة جميع مشاريع الفريق</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {isAdmin && (
+          {canManageRepository && (
             <button onClick={() => setShowRepositoryModal(true)} className="btn-secondary relative flex items-center gap-2 cursor-pointer">
               <FolderIcon size={16} /> مستودع المشاريع
               {repositoryStats.available > 0 && <span className="badge-success">{repositoryStats.available}</span>}

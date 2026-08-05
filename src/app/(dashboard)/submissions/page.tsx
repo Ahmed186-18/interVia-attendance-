@@ -108,13 +108,20 @@ export default function SubmissionsPage() {
     }
   }, []);
 
+  const fetchProjects = useCallback(async () => {
+    const response = await fetch(`/api/projects?fresh=${Date.now()}`, { cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "تعذر تحميل المشاريع");
+    setProjects(data.projects || []);
+  }, []);
+
   useEffect(() => {
     void fetchSubmissions();
-    void fetch("/api/projects", { cache: "no-store" }).then((response) => response.json()).then((data) => setProjects(data.projects || []));
+    void fetchProjects().catch((error) => setMessage({ tone: "danger", text: error instanceof Error ? error.message : "تعذر تحميل المشاريع" }));
     if (isManager) void fetch("/api/users", { cache: "no-store" }).then((response) => response.json()).then((data) => setTeam(data.users || []));
     const timer = window.setInterval(() => void fetchSubmissions(true), 20000);
     return () => window.clearInterval(timer);
-  }, [fetchSubmissions, isManager]);
+  }, [fetchProjects, fetchSubmissions, isManager]);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -196,7 +203,7 @@ export default function SubmissionsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div><h1 className="page-title">تسليم الملفات</h1><p className="page-subtitle">{isManager ? "متابعة التسليمات اليومية والشهرية للفريق" : "ارفع ملفات عملك اليومية والشهرية حسب المشروع"}</p></div>
-        {!isManager && <button disabled={!configured} onClick={() => setShowCreate(true)} className="btn-primary flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"><PlusIcon size={18} /> تسليم جديد</button>}
+        {!isManager && <button disabled={!configured} onClick={async () => { try { await fetchProjects(); setShowCreate(true); } catch (error) { setMessage({ tone: "danger", text: error instanceof Error ? error.message : "تعذر تحديث المشاريع" }); } }} className="btn-primary flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"><PlusIcon size={18} /> تسليم جديد</button>}
       </div>
 
       {!configured && (

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireManager } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   downloadDropboxFile,
@@ -12,15 +12,6 @@ import { createAuditLog } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function requireAdmin(request: NextRequest) {
-  const auth = requireAuth(request);
-  if (auth instanceof NextResponse) return auth;
-  if (auth.role !== "ADMIN") {
-    return NextResponse.json({ error: "مستودع المشاريع متاح للأدمن فقط" }, { status: 403 });
-  }
-  return auth;
-}
-
 function text(value: unknown) {
   if (value === null || value === undefined) return null;
   const result = String(value).replace(/\s+/g, " ").trim();
@@ -28,7 +19,7 @@ function text(value: unknown) {
 }
 
 export async function GET(request: NextRequest) {
-  const auth = requireAdmin(request);
+  const auth = requireManager(request);
   if (auth instanceof NextResponse) return auth;
   const params = new URL(request.url).searchParams;
   const query = String(params.get("q") || "").trim();
@@ -61,7 +52,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireAdmin(request);
+  const auth = requireManager(request);
   if (auth instanceof NextResponse) return auth;
   if (!(await isDropboxConfigured())) {
     return NextResponse.json({ error: "اربط Dropbox أولاً من الإعدادات" }, { status: 503 });

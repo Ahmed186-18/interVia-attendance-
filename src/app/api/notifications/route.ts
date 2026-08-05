@@ -18,8 +18,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "الحساب غير نشط" }, { status: 403 });
     }
     const allowedAudiences =
-      currentUser.role === "ADMIN" ? ["USER", "ADMIN", "MANAGEMENT"] :
-      currentUser.role === "MANAGER" ? ["USER", "MANAGEMENT"] :
+      currentUser.role === "ADMIN" || currentUser.role === "MANAGER" ? ["USER", "ADMIN", "MANAGEMENT"] :
       ["USER", "EMPLOYEE"];
     const where = {
       userId: userOrResponse.userId,

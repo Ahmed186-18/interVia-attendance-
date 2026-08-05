@@ -54,20 +54,19 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
-  const isAdmin = user?.role === "ADMIN";
   const isManager = user?.role === "ADMIN" || user?.role === "MANAGER";
   const tabs = useMemo(() => [
     { id: "account" as Tab, label: "الحساب", icon: UsersIcon },
     { id: "appearance" as Tab, label: "المظهر", icon: SettingsIcon },
     { id: "notifications" as Tab, label: "الإشعارات", icon: BellIcon },
     { id: "security" as Tab, label: "الأمان", icon: LockIcon },
-    ...(isAdmin ? [
+    ...(isManager ? [
       { id: "organization" as Tab, label: "المؤسسة", icon: FolderIcon },
       { id: "policies" as Tab, label: "سياسات العمل", icon: ClockIcon },
       { id: "integrations" as Tab, label: "التكاملات", icon: FolderIcon },
     ] : []),
     ...(isManager ? [{ id: "audit" as Tab, label: "سجل النشاط", icon: ActivityIcon }] : []),
-  ], [isAdmin, isManager]);
+  ], [isManager]);
 
   useEffect(() => {
     (async () => {
@@ -82,7 +81,7 @@ export default function SettingsPage() {
           const auditResponse = await fetch("/api/audit");
           if (auditResponse.ok) setLogs((await auditResponse.json()).logs || []);
         }
-        if (isAdmin) {
+        if (isManager) {
           const dropboxResponse = await fetch("/api/integrations/dropbox/status");
           if (dropboxResponse.ok) setDropbox(await dropboxResponse.json());
         }
@@ -90,7 +89,7 @@ export default function SettingsPage() {
         show("error", error instanceof Error ? error.message : "تعذر تحميل الإعدادات");
       } finally { setLoading(false); }
     })();
-  }, [isAdmin, isManager]);
+  }, [isManager]);
 
   function show(type: "ok" | "error", text: string) {
     setNotice({ type, text });

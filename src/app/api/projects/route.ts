@@ -39,7 +39,10 @@ export async function GET(request: NextRequest) {
       inReviewTasks: project.tasks.filter((task) => task.status === "IN_REVIEW").length,
     }));
 
-    return NextResponse.json({ projects: projectsWithStats });
+    return NextResponse.json(
+      { projects: projectsWithStats },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" } }
+    );
   } catch (error) {
     console.error("Get projects error:", error);
     return NextResponse.json({ error: "حدث خطأ أثناء تحميل المشاريع" }, { status: 500 });

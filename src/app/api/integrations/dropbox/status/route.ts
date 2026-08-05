@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireManager } from "@/lib/auth";
 import {
   DropboxIntegrationError,
   getDropboxConnectionStatus,
@@ -13,11 +13,8 @@ import {
 import { createAuditLog } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
-  const auth = requireAuth(request);
+  const auth = requireManager(request);
   if (auth instanceof NextResponse) return auth;
-  if (auth.role !== "ADMIN") {
-    return NextResponse.json({ error: "هذه المعلومات متاحة لمدير النظام فقط" }, { status: 403 });
-  }
 
   const status = await getDropboxConnectionStatus();
   return NextResponse.json(status, {
@@ -26,11 +23,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = requireAuth(request);
+  const auth = requireManager(request);
   if (auth instanceof NextResponse) return auth;
-  if (auth.role !== "ADMIN") {
-    return NextResponse.json({ error: "هذه العملية متاحة لمدير النظام فقط" }, { status: 403 });
-  }
 
   try {
     const body = await request.json();
@@ -83,11 +77,8 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const auth = requireAuth(request);
+  const auth = requireManager(request);
   if (auth instanceof NextResponse) return auth;
-  if (auth.role !== "ADMIN") {
-    return NextResponse.json({ error: "هذه العملية متاحة لمدير النظام فقط" }, { status: 403 });
-  }
 
   await Promise.all([
     deleteIntegrationCredential("dropbox_access_token"),

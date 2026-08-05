@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireManager } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAuditLog } from "@/lib/utils";
 
@@ -8,11 +8,8 @@ function normalize(value: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireAuth(request);
+  const auth = requireManager(request);
   if (auth instanceof NextResponse) return auth;
-  if (auth.role !== "ADMIN") {
-    return NextResponse.json({ error: "استيراد المشاريع متاح للأدمن فقط" }, { status: 403 });
-  }
 
   try {
     const body = await request.json();

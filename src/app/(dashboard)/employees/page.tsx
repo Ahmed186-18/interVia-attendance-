@@ -9,6 +9,7 @@ import {
   CalendarIcon,
   CheckSquareIcon,
   ClockIcon,
+  CopyIcon,
   FolderIcon,
   ListIcon,
   PlusIcon,
@@ -337,8 +338,8 @@ export default function EmployeesPage() {
         </>
       )}
 
-      {selected && <EmployeeProfile employee={selected} onClose={() => setSelected(null)} onDeactivate={() => deactivate(selected)} onActivate={() => activate(selected)} canResetPassword={user?.role === "ADMIN"} onResetPassword={() => resetPassword(selected)} />}
-      {showAdd && <AddEmployeeModal isAdmin={user?.role === "ADMIN"} onClose={() => setShowAdd(false)} onCreated={() => { setShowAdd(false); fetchEmployees(); }} />}
+      {selected && <EmployeeProfile employee={selected} onClose={() => setSelected(null)} onDeactivate={() => deactivate(selected)} onActivate={() => activate(selected)} canResetPassword={isManager} onResetPassword={() => resetPassword(selected)} />}
+      {showAdd && <AddEmployeeModal canCreateManager={isManager} onClose={() => setShowAdd(false)} onCreated={() => { setShowAdd(false); fetchEmployees(); }} />}
       {resetInfo && <PasswordResultModal info={resetInfo} onClose={() => setResetInfo(null)} />}
     </div>
   );
@@ -365,7 +366,7 @@ function EmployeeTable({ employees, onSelect }: { employees: Employee[]; onSelec
                 <td className="px-4 py-3"><StatusBadge status={employee.status} /></td>
                 <td className="px-4 py-3 text-sm font-semibold text-navy">{employee.metrics.projects}</td>
                 <td className="px-4 py-3"><span className="text-sm font-semibold text-navy">{employee.metrics.activeTasks}</span>{employee.metrics.overdueTasks > 0 && <span className="mr-2 text-[10px] text-danger">{employee.metrics.overdueTasks} متأخرة</span>}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-navy">{employee.role === "ADMIN" ? "—" : employee.metrics.monthHours.toFixed(1)}</td>
+                <td className="px-4 py-3 text-sm font-semibold text-navy">{employee.role !== "EMPLOYEE" ? "—" : employee.metrics.monthHours.toFixed(1)}</td>
                 <td className="px-4 py-3"><WorkloadBadge workload={employee.workload} /></td>
                 <td className="px-4 py-3 text-sm font-semibold text-warning">{employee.metrics.pendingRequests || "—"}</td>
                 <td className="px-4 py-3 text-left text-xs font-medium text-teal">عرض الملف</td>
@@ -385,7 +386,7 @@ function EmployeeCard({ employee, onSelect }: { employee: Employee; onSelect: ()
       <div className="mt-5 grid grid-cols-3 gap-2 text-center">
         <SmallMetric value={employee.metrics.activeTasks} label="مهام نشطة" />
         <SmallMetric value={employee.metrics.projects} label="مشاريع" />
-        <SmallMetric value={employee.role === "ADMIN" ? "—" : employee.metrics.monthHours.toFixed(0)} label="ساعة" />
+        <SmallMetric value={employee.role !== "EMPLOYEE" ? "—" : employee.metrics.monthHours.toFixed(0)} label="ساعة" />
       </div>
       <div className="mt-4 flex items-center justify-between"><WorkloadBadge workload={employee.workload} />{employee.metrics.overdueTasks > 0 && <span className="text-xs font-medium text-danger">{employee.metrics.overdueTasks} مهام متأخرة</span>}</div>
     </button>
@@ -466,18 +467,18 @@ function OverviewTab({ employee }: { employee: Employee }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <ProfileMetric icon={CheckSquareIcon} value={employee.metrics.activeTasks} label="مهام نشطة" />
         <ProfileMetric icon={FolderIcon} value={employee.metrics.projects} label="مشاريع" />
-        <ProfileMetric icon={ClockIcon} value={employee.role === "ADMIN" ? "—" : employee.metrics.monthHours.toFixed(1)} label="ساعات الشهر" />
+        <ProfileMetric icon={ClockIcon} value={employee.role !== "EMPLOYEE" ? "—" : employee.metrics.monthHours.toFixed(1)} label="ساعات الشهر" />
         <ProfileMetric icon={TrendingUpIcon} value={employee.metrics.completedTasks} label="مهام مكتملة" />
       </div>
-      <section className="card p-5"><h3 className="font-semibold text-navy">حالة اليوم</h3>{employee.role === "ADMIN" ? <Empty text="الحضور غير مطلوب لحساب مدير النظام" /> : employee.todayAttendance ? <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"><Info label="الدخول" value={formatTime(employee.todayAttendance.checkIn)} /><Info label="الخروج" value={employee.todayAttendance.checkOut ? formatTime(employee.todayAttendance.checkOut) : "يعمل الآن"} /><Info label="الفحوصات" value={`${employee.todayAttendance.confirmedChecks}/${employee.todayAttendance.totalChecks}`} /><Info label="الخصومات" value={String(employee.todayAttendance.deductedChecks)} danger={employee.todayAttendance.deductedChecks > 0} /></div> : <Empty text="لا يوجد تسجيل حضور اليوم" />}</section>
+      <section className="card p-5"><h3 className="font-semibold text-navy">حالة اليوم</h3>{employee.role !== "EMPLOYEE" ? <Empty text="الحضور غير مطلوب لحسابات الإدارة" /> : employee.todayAttendance ? <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"><Info label="الدخول" value={formatTime(employee.todayAttendance.checkIn)} /><Info label="الخروج" value={employee.todayAttendance.checkOut ? formatTime(employee.todayAttendance.checkOut) : "يعمل الآن"} /><Info label="الفحوصات" value={`${employee.todayAttendance.confirmedChecks}/${employee.todayAttendance.totalChecks}`} /><Info label="الخصومات" value={String(employee.todayAttendance.deductedChecks)} danger={employee.todayAttendance.deductedChecks > 0} /></div> : <Empty text="لا يوجد تسجيل حضور اليوم" />}</section>
       <section className="card p-4 sm:p-5"><div className="flex items-center justify-between"><h3 className="font-semibold text-navy">عبء العمل</h3><WorkloadBadge workload={employee.workload} /></div><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3"><Info label="مهام نشطة" value={String(employee.metrics.activeTasks)} /><Info label="متأخرة" value={String(employee.metrics.overdueTasks)} danger={employee.metrics.overdueTasks > 0} /><Info label="وقت المهام" value={`${employee.metrics.trackedHours.toFixed(1)} س`} /></div></section>
     </div>
   );
 }
 
 function AttendanceTab({ employee }: { employee: Employee }) {
-  if (employee.role === "ADMIN") {
-    return <section className="card p-5"><Empty text="سجلات الحضور غير مطلوبة لحساب مدير النظام" /></section>;
+  if (employee.role !== "EMPLOYEE") {
+    return <section className="card p-5"><Empty text="سجلات الحضور غير مطلوبة لحسابات الإدارة" /></section>;
   }
   return <SectionList title="سجل الحضور هذا الشهر" icon={CalendarIcon} empty="لا توجد سجلات حضور">{employee.attendance.map((item) => <div key={item.id} className="flex items-center justify-between gap-3 border-b border-tint-200 py-3"><div><p className="text-sm font-medium text-navy">{formatDate(item.date)}</p><p className="mt-1 text-xs text-muted">{formatTime(item.checkIn)} — {item.checkOut ? formatTime(item.checkOut) : "لم يسجل خروجًا"}</p></div><div className="text-left"><p className="text-sm font-semibold text-teal">{item.totalHours.toFixed(1)} س</p>{item.deductedChecks > 0 && <p className="text-[10px] text-danger">{item.deductedChecks} خصم</p>}</div></div>)}</SectionList>;
 }
@@ -521,11 +522,12 @@ function Empty({ text }: { text: string }) {
   return <div className="py-10 text-center text-sm text-muted">{text}</div>;
 }
 
-function AddEmployeeModal({ isAdmin, onClose, onCreated }: { isAdmin: boolean; onClose: () => void; onCreated: () => void }) {
+function AddEmployeeModal({ canCreateManager, onClose, onCreated }: { canCreateManager: boolean; onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({ name: "", username: "", country: "فلسطين", role: "EMPLOYEE" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState<{ name: string; email: string; password: string } | null>(null);
+  const [copied, setCopied] = useState(false);
   const timezones: Record<string, string> = { "فلسطين": "Asia/Gaza", "قطر": "Asia/Qatar", "مصر": "Africa/Cairo", "السعودية": "Asia/Riyadh", "الإمارات": "Asia/Dubai", "بريطانيا": "Europe/London", "أمريكا": "America/New_York" };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); setSaving(true); setError("");
@@ -534,14 +536,19 @@ function AddEmployeeModal({ isAdmin, onClose, onCreated }: { isAdmin: boolean; o
     if (!response.ok) { setError(data.error || "تعذر إنشاء الموظف"); return; }
     setCreated({ name: data.user.name, email: data.user.email, password: data.tempPassword });
   };
+  const copyCreatedCredentials = async () => {
+    if (!created) return;
+    await navigator.clipboard.writeText(`الاسم: ${created.name}\nالبريد: ${created.email}\nكلمة المرور المؤقتة: ${created.password}`);
+    setCopied(true);
+  };
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy/35 p-4 backdrop-blur-sm">
       <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-4 shadow-soft-lg sm:p-6">
         <div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-semibold text-navy">إضافة موظف</h2><p className="mt-1 text-xs text-muted">إنشاء حساب جديد للفريق</p></div><button onClick={onClose} className="rounded-xl p-2 text-muted hover:bg-tint"><XIcon size={19} /></button></div>
-        {created ? <div className="space-y-4"><div className="rounded-xl border border-success/20 bg-success/5 p-4"><p className="font-semibold text-success">تم إنشاء الحساب بنجاح</p><div className="mt-4 space-y-2 text-sm"><InfoRow label="الاسم" value={created.name} /><InfoRow label="البريد" value={created.email} /><InfoRow label="كلمة المرور المؤقتة" value={created.password} /></div></div><button onClick={onCreated} className="btn-primary w-full">تم</button></div> : <form onSubmit={submit} className="space-y-4">
+        {created ? <div className="space-y-4"><div className="rounded-xl border border-success/20 bg-success/5 p-4"><p className="font-semibold text-success">تم إنشاء الحساب بنجاح</p><div className="mt-4 space-y-2 text-sm"><InfoRow label="الاسم" value={created.name} /><InfoRow label="البريد" value={created.email} /><InfoRow label="كلمة المرور المؤقتة" value={created.password} /></div></div><div className="flex gap-3"><button type="button" onClick={copyCreatedCredentials} className="btn-secondary flex flex-1 items-center justify-center gap-2"><CopyIcon size={16} />{copied ? "تم النسخ" : "نسخ بيانات الدخول"}</button><button onClick={onCreated} className="btn-primary flex-1">تم</button></div></div> : <form onSubmit={submit} className="space-y-4">
           <label className="label">الاسم الكامل<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className="input-field mt-1.5" /></label>
           <label className="label">اسم المستخدم<input required dir="ltr" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value.toLowerCase().replace(/[^a-z0-9._]/g, "") })} className="input-field mt-1.5" placeholder="username" /><span className="mt-1 block text-[10px] text-muted">{form.username || "username"}@intervia.com</span></label>
-          <div className="grid gap-3 sm:grid-cols-2"><label className="label">الدولة<select value={form.country} onChange={(event) => setForm({ ...form, country: event.target.value })} className="input-field mt-1.5">{Object.keys(timezones).map((country) => <option key={country}>{country}</option>)}</select></label><label className="label">الدور<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })} className="input-field mt-1.5"><option value="EMPLOYEE">موظف</option>{isAdmin && <option value="MANAGER">مدير</option>}</select></label></div>
+          <div className="grid gap-3 sm:grid-cols-2"><label className="label">الدولة<select value={form.country} onChange={(event) => setForm({ ...form, country: event.target.value })} className="input-field mt-1.5">{Object.keys(timezones).map((country) => <option key={country}>{country}</option>)}</select></label><label className="label">الدور<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })} className="input-field mt-1.5"><option value="EMPLOYEE">موظف</option>{canCreateManager && <option value="MANAGER">مدير</option>}</select></label></div>
           {error && <div className="rounded-xl bg-danger/5 p-3 text-sm text-danger">{error}</div>}
           <div className="flex gap-3 pt-2"><button disabled={saving} className="btn-primary flex-1 disabled:opacity-50">{saving ? "جاري الإنشاء..." : "إنشاء الحساب"}</button><button type="button" onClick={onClose} className="btn-secondary">إلغاء</button></div>
         </form>}

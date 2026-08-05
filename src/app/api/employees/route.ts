@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
           sum + task.timeEntries.reduce((entrySum, entry) => entrySum + (entry.duration || 0), 0),
         0
       );
-      const status = user.role === "ADMIN"
+      const status = user.role === "ADMIN" || user.role === "MANAGER"
         ? "NOT_REQUIRED"
         : !user.isActive
         ? "INACTIVE"
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
         inactive: employees.filter((employee) => !employee.isActive).length,
         working: employees.filter((employee) => employee.status === "WORKING").length,
         onLeave: employees.filter((employee) => employee.status === "ON_LEAVE").length,
-        absent: employees.filter((employee) => employee.role !== "ADMIN" && employee.status === "ABSENT").length,
+        absent: employees.filter((employee) => employee.role === "EMPLOYEE" && employee.status === "ABSENT").length,
         overloaded: employees.filter((employee) => employee.isActive && employee.workload === "HIGH").length,
         pendingRequests: employees.reduce(
           (sum, employee) => sum + employee.metrics.pendingRequests,

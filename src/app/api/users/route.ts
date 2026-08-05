@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (role === "ADMIN" || (role === "MANAGER" && userOrResponse.role !== "ADMIN")) {
+    if (role === "ADMIN") {
       return NextResponse.json({ error: "لا تملك صلاحية إنشاء حساب بهذا الدور" }, { status: 403 });
     }
 
@@ -130,9 +130,6 @@ export async function PATCH(request: NextRequest) {
     if (!target) return NextResponse.json({ error: "الموظف غير موجود" }, { status: 404 });
 
     if (action === "RESET_PASSWORD") {
-      if (userOrResponse.role !== "ADMIN") {
-        return NextResponse.json({ error: "المدير العام فقط يمكنه إعادة تعيين كلمة المرور" }, { status: 403 });
-      }
       if (target.role === "ADMIN") {
         return NextResponse.json({ error: "لا يمكن إعادة تعيين كلمة مرور مدير النظام من هنا" }, { status: 400 });
       }
@@ -157,7 +154,7 @@ export async function PATCH(request: NextRequest) {
       });
     }
 
-    if (target.role === "ADMIN" || (target.role === "MANAGER" && userOrResponse.role !== "ADMIN")) {
+    if (target.role === "ADMIN") {
       return NextResponse.json({ error: "لا تملك صلاحية تفعيل هذا الحساب" }, { status: 403 });
     }
 
@@ -194,10 +191,6 @@ export async function DELETE(request: NextRequest) {
 
     if (targetUser.role === "ADMIN") {
       return NextResponse.json({ error: "لا يمكن حذف المدير العام" }, { status: 400 });
-    }
-
-    if (targetUser.role === "MANAGER" && userOrResponse.role !== "ADMIN") {
-      return NextResponse.json({ error: "المدير العام فقط يمكنه إيقاف حساب مدير" }, { status: 403 });
     }
 
     if (targetUser.id === userOrResponse.userId) {

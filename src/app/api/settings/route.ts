@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { isManagementRole, requireAuth } from "@/lib/auth";
 import { createAuditLog } from "@/lib/utils";
 
 const THEMES = ["LIGHT", "DARK", "SYSTEM"];
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       profile: user,
       personal,
-      system: auth.role === "ADMIN" ? { ...system, workingDays: JSON.parse(system.workingDays) } : null,
+      system: isManagementRole(auth.role) ? { ...system, workingDays: JSON.parse(system.workingDays) } : null,
     });
   } catch (error) {
     console.error("Get settings error:", error);
@@ -98,7 +98,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (section === "system") {
-      if (auth.role !== "ADMIN") return NextResponse.json({ error: "هذه الإعدادات لمدير النظام فقط" }, { status: 403 });
+      if (!isManagementRole(auth.role)) return NextResponse.json({ error: "هذه الإعدادات للإدارة فقط" }, { status: 403 });
       const organizationName = String(body.organizationName || "").trim();
       const timezone = String(body.timezone || "");
       const dailyWorkHours = Number(body.dailyWorkHours);
